@@ -1,6 +1,6 @@
-import * as express from "express";
-import * as expressWs from "express-ws";
-import * as bodyParser from "body-parser";
+import express from "express";
+import expressWs from "express-ws";
+import bodyParser from "body-parser";
 
 class App {
   public app;

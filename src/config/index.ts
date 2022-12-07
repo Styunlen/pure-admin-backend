@@ -9,6 +9,7 @@ if (envFound.error) {
 
 export default {
   port: parseInt(process.env.PORT, 10),
+  databaseType: process.env.DATABASE_TYPE,
   databaseURL: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,
   jwtAlgorithm: process.env.JWT_ALGO,
@@ -17,7 +18,7 @@ export default {
       info: {
         description: "pure-admin官方后端",
         title: "Swagger",
-        version: require("../../package.json").version,
+        version: require("../../package.json").version
       },
       host: `localhost:${parseInt(process.env.PORT, 10)}`,
       basePath: "/",
@@ -28,41 +29,41 @@ export default {
           type: "apiKey",
           in: "header",
           name: "Authorization",
-          description: "Bearer Authorization",
-        },
-      },
+          description: "Bearer Authorization"
+        }
+      }
     },
     route: {
       url: "./swagger-ui.html",
       // swagger文件 api
-      docs: "/swagger.json",
+      docs: "/swagger.json"
     },
     // app absolute path
     basedir: __dirname,
     // path to the API handle folder
-    files: ["../router/*.ts"],
+    files: ["../router/*.ts"]
   },
   logs: {
-    level: process.env.LOG_LEVEL || "silly",
+    level: process.env.LOG_LEVEL || "silly"
   },
   agenda: {
     dbCollection: process.env.AGENDA_DB_COLLECTION,
     pooltime: process.env.AGENDA_POOL_TIME,
-    concurrency: parseInt(process.env.AGENDA_CONCURRENCY, 10),
+    concurrency: parseInt(process.env.AGENDA_CONCURRENCY, 10)
   },
   mysql: {
     host: "localhost",
     charset: "utf8_general_ci",
     user: "root",
-    password: "123456789",
+    password: "123456789"
   },
   mongodb: {},
   sqlite: {},
   api: {
-    prefix: "/api",
+    prefix: "/api"
   },
   emails: {
     apiKey: process.env.MAILGUN_API_KEY,
-    domain: process.env.MAILGUN_DOMAIN,
-  },
+    domain: process.env.MAILGUN_DOMAIN
+  }
 };

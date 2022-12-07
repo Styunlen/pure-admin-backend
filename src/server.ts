@@ -1,8 +1,8 @@
 import app from "./app";
 // import * as open from "open";
 import config from "./config";
-import * as dayjs from "dayjs";
-import * as multer from "multer";
+import dayjs from "dayjs";
+import multer from "multer";
 import { user } from "./models/mysql";
 import Logger from "./loaders/logger";
 import { queryTable } from "./utils/mysql";

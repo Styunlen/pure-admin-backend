@@ -1,16 +1,25 @@
 {
   "compilerOptions": {
     "target": "ESNEXT",
-    "module": "commonjs",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "pretty": true,
     "sourceMap": true,
     "outDir": "dist",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
   },
   "include": ["src/**/*.ts", ],
   "exclude": [
     "node_modules",
     "src/router/api/*.ts",
     "dist"
-  ]
+  ],
+  "ts-node": {
+    "esm": true
+  }
 }

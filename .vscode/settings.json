@@ -1,0 +1,115 @@
+{
+    "git.ignoreMissingGitWarning": true,
+    "[bat]": {},
+    "code-runner.runInTerminal": true,
+    "code-runner.saveAllFilesBeforeRun": true,
+    "code-runner.saveFileBeforeRun": true,
+    "code-runner.executorMap": {
+      "cpp": "g++ $fileName -o bin/$fileNameWithoutExt.exe -fexec-charset=GBK && ./bin/$fileNameWithoutExt.exe"
+    },
+    "C_Cpp.updateChannel": "Insiders",
+    "php.executablePath": "F:\\Developer WorkDir\\PHP74\\php.exe",
+    "python.pythonPath": "D:\\Python27\\python.exe",
+    "[php]": {},
+    "workbench.sideBar.location": "left",
+    "editor.renderControlCharacters": true,
+    "terminal.integrated.rendererType": "dom",
+    "vscode_vibrancy.theme": "Default Light",
+    "html.trace": "verbose",
+    "highlight.regexes": {
+      "(// ?TODO:?)(.*)": [
+        {
+          "overviewRulerColor": "#cc0000",
+          "backgroundColor": "#cc0000",
+          "color": "#1f1f1f",
+          "fontWeight": "bold"
+        },
+        {
+          "color": "#1f1f1f"
+        }
+      ],
+      "(// ?FIXED:?)(.*)": [
+        {
+          "overviewRulerColor": "#ff0000",
+          "backgroundColor": "#ff0000",
+          "color": "#1f1f1f",
+          "fontWeight": "bold",
+          "fontSize": "48px"
+        },
+        {
+          "color": "#1f1f1f"
+        }
+      ],
+      "(// )(@\\w+)": [
+        {},
+        {
+          "color": "#4de0ff"
+        }
+      ]
+    },
+    "editor.multiCursorModifier": "ctrlCmd",
+    "workbench.editorAssociations": {
+      "*.ipynb": "jupyter-notebook"
+    },
+    "notebook.cellToolbarLocation": {
+      "default": "right",
+      "jupyter-notebook": "left"
+    },
+    "code-runner.fileDirectoryAsCwd": true,
+    "python.defaultInterpreterPath": "D:\\Developer Tools\\Python310\\python.exe",
+    "editor.fontSize": 28,
+    "terminal.integrated.gpuAcceleration": "off",
+    "[vue]": {
+      "editor.defaultFormatter": "Vue.volar"
+    },
+    "workbench.colorTheme": "Solarized Light",
+    "workbench.iconTheme": "vscode-icons",
+    "vs-kubernetes": {
+      "vscode-kubernetes.helm-path.windows": "C:\\Users\\Styunlen\\.vs-kubernetes\\tools\\helm\\windows-amd64\\helm.exe",
+      "vscode-kubernetes.minikube-path.windows": "C:\\Users\\Styunlen\\.vs-kubernetes\\tools\\minikube\\windows-amd64\\minikube.exe",
+      "vscode-kubernetes.kubectl-path.windows": "C:\\Users\\Styunlen\\.vs-kubernetes\\tools\\kubectl\\kubectl.exe"
+    },
+    "vite.autoStart": false,
+    "vite.browserType": "system",
+    "vite.showTerminal": true,
+    "vite.vitepressAutoRouting": true,
+    "sqltools.useNodeRuntime": true,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "eslint.alwaysShowStatus": true,
+    "eslint.nodeEnv": "",
+    "prettier.arrowParens": "avoid",
+    "prettier.requireConfig": true,
+    "prettier.singleAttributePerLine": true,
+    "prettier.useTabs": true,
+    "python.analysis.autoImportCompletions": true,
+    "prettier.vueIndentScriptAndStyle": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      {
+        "language": "vue",
+        "autoFix": true
+      }
+    ],
+    "prettier.singleQuote": true,
+    "diffEditor.codeLens": true,
+    "editor.quickSuggestions": {
+      "strings": "on"
+    },
+    "vetur.completion.scaffoldSnippetSources": {
+      "workspace": "💼",
+      "user": "🗒️",
+      "vetur": "✌"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "eslint.format.enable": true,
+    "prettier.semi": true,
+  }
+  
