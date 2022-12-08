@@ -1,19 +1,29 @@
 <p align="center">
-pure-admin官方后端 
+pure-admin官方后端重制版
 <br />
 采用nodejs编写
 </p>
 
+## 介绍
+
+** 中文 ** | [English] (./README.EN.md)
+官方版本只有mysql的后端，且没有使用orm框架，对数据操作的抽象程度有待完善，于是就出了这个重制版，算是对官方版本的贡献。
+
+
 ## 快速启动
+### 设置后端使用的数据库
 
-### 打开 `MySql`
+来到项目的 `env` 文件，设置一个环境变量`DATABASE_TYPE`
 
-来到项目的 `src/config/index.ts` 文件，查看第 `50` 行，将 `mysql` 的账号密码跟您的 `mysql` 保持一致
-
+默认值是`sqlite`
+```
+DATABASE_TYPE='sqlite'
+```
 ### 安装依赖
 
 ```
 pnpm install
+pnpm run typeorm migration:run -d .\src\config\database.ts
 ```
 
 ### 项目启动
