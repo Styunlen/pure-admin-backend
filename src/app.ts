@@ -1,7 +1,6 @@
 import express from "express";
 import expressWs from "express-ws";
 import bodyParser from "body-parser";
-
 class App {
   public app;
   constructor() {
@@ -16,7 +15,7 @@ class App {
     // 支持编码的主体
     this.app.use(
       bodyParser.urlencoded({
-        extended: true,
+        extended: true
       })
     );
     // 设置静态访问目录(Swagger)

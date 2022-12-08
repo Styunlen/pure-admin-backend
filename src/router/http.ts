@@ -1,22 +1,24 @@
-import * as fs from "fs";
-import secret from "../config";
-import * as mysql from "mysql2";
-import * as jwt from "jsonwebtoken";
 import { createHash } from "crypto";
-import Logger from "../loaders/logger";
-import { Message } from "../utils/enums";
-import getFormatDate from "../utils/date";
-import { connection } from "../utils/mysql";
 import { Request, Response } from "express";
+import * as fs from "fs";
+import * as jwt from "jsonwebtoken";
 import { createMathExpr } from "svg-captcha";
+import secret from "../config";
+import { connection } from "../config/database";
+import User, { userSchema } from "../models/user";
+import { Message } from "../utils/enums";
+import { messages } from "../utils/messages";
+import { errorManger } from "./utils/error";
+// import { connection } from "../utils/mysql";
+// import * as mysql from "mysql2";
 
 const utils = require("@pureadmin/utils");
-
+const userRepository = connection.getRepository(User);
 /** 保存验证码 */
 let generateVerify: number;
 
 /** 过期时间 单位：毫秒 默认 1分钟过期，方便演示 */
-let expiresIn = 60000;
+const expiresIn = 60000;
 
 /**
  * @typedef Error
@@ -63,69 +65,72 @@ const login = async (req: Request, res: Response) => {
   //   message: Message[0];
   // }
   // })
-  const { username, password } = req.body;
-  let sql: string =
-    "select * from users where username=" + "'" + username + "'";
-  connection.query(sql, async function (err, data: any) {
-    if (data.length == 0) {
-      await res.json({
-        success: false,
-        data: { message: Message[1] },
-      });
-    } else {
-      if (
-        createHash("md5").update(password).digest("hex") == data[0].password
-      ) {
-        const accessToken = jwt.sign(
+  const validatorResult = userSchema.login.validate(req.body);
+  if (validatorResult.error) {
+    /**
+   * Error structure example
+     {
+      "value": {},
+      "error": {
+        "_original": {},
+        "details": [
           {
-            accountId: data[0].id,
-          },
-          secret.jwtSecret,
-          { expiresIn }
-        );
-        if (username === "admin") {
-          await res.json({
+            "message": "something","path": [""],
+            "type": "any.required","context": {"label": "","key": ""}
+          }
+        ]
+      }
+   */
+    return errorManger.retWithQueryInvaildError(
+      res,
+      validatorResult.error?.message ?? validatorResult.error
+    );
+  }
+  const { username, password } = req.body;
+  userRepository
+    .findOneBy({ username })
+    .then(user => {
+      if (!user) {
+        return res.status(403).json({
+          success: false,
+          data: {
+            message: messages.errMsg.notRegister
+          }
+        });
+      } else {
+        if (user.password == createHash("md5").update(password).digest("hex")) {
+          const accessToken = jwt.sign(
+            {
+              accountId: user.id
+            },
+            secret.jwtSecret,
+            { expiresIn }
+          );
+          return res.json({
             success: true,
             data: {
-              message: Message[2],
+              message: messages.successMsg.logged,
               username,
               // 这里模拟角色，根据自己需求修改
-              roles: ["admin"],
+              roles: [user.username == "admin" ? "admin" : "common"],
               accessToken,
               // 这里模拟刷新token，根据自己需求修改
               refreshToken: "eyJhbGciOiJIUzUxMiJ9.adminRefresh",
               expires: new Date(new Date()).getTime() + expiresIn,
               // 这个标识是真实后端返回的接口，只是为了演示
               pureAdminBackend:
-                "这个标识是pure-admin-backend真实后端返回的接口，只是为了演示",
-            },
+                "这个标识是pure-admin-backend真实后端返回的接口，只是为了演示"
+            }
           });
         } else {
-          await res.json({
-            success: true,
-            data: {
-              message: Message[2],
-              username,
-              // 这里模拟角色，根据自己需求修改
-              roles: ["common"],
-              accessToken,
-              // 这里模拟刷新token，根据自己需求修改
-              refreshToken: "eyJhbGciOiJIUzUxMiJ9.adminRefresh",
-              expires: new Date(new Date()).getTime() + expiresIn,
-              // 这个标识是真实后端返回的接口，只是为了演示
-              pureAdminBackend:
-                "这个标识是pure-admin-backend真实后端返回的接口，只是为了演示",
-            },
+          return res.json({
+            success: false,
+            data: { message: messages.errMsg.wrongPwd }
           });
         }
-      } else {
-        await res.json({
-          success: false,
-          data: { message: Message[3] },
-        });
       }
-    }
-  });
+    })
+    .catch(err => errorManger.retWithDatabaseError(res, err));
 };
 
 // /**
@@ -156,53 +161,44 @@ const login = async (req: Request, res: Response) => {
 
 const register = async (req: Request, res: Response) => {
   // const { username, password, verify } = req.body;
+  const validatorResult = userSchema.register.validate(req.body);
+  if (validatorResult.error) {
+    console.log(validatorResult.error);
+    return errorManger.retWithQueryInvaildError(
+      res,
+      validatorResult.error?.message ?? validatorResult.error
+    );
+  }
   const { username, password } = req.body;
   // if (generateVerify !== verify)
   //   return res.json({
   //     success: false,
   //     data: { message: Message[0] },
   //   });
-  if (password.length < 6)
-    return res.json({
-      success: false,
-      data: { message: Message[4] },
-    });
-  let sql: string =
-    "select * from users where username=" + "'" + username + "'";
-  connection.query(sql, async (err, data: any) => {
-    if (data.length > 0) {
-      await res.json({
-        success: false,
-        data: { message: Message[5] },
-      });
-    } else {
-      let time = await getFormatDate();
-      let sql: string =
-        "insert into users (username,password,time) value(" +
-        "'" +
-        username +
-        "'" +
-        "," +
-        "'" +
-        createHash("md5").update(password).digest("hex") +
-        "'" +
-        "," +
-        "'" +
-        time +
-        "'" +
-        ")";
-      connection.query(sql, async function (err) {
-        if (err) {
-          Logger.error(err);
-        } else {
-          await res.json({
-            success: true,
-            data: { message: Message[6] },
-          });
-        }
-      });
-    }
-  });
+  userRepository
+    .findOneBy({ username })
+    .then(user => {
+      if (user) {
+        return res.json({
+          success: false,
+          data: { message: messages.errMsg.alreadyRegistered }
+        });
+      } else {
+        userRepository
+          .save({
+            username,
+            password: createHash("md5").update(password).digest("hex")
+          })
+          .then(() => {
+            return res.json({
+              success: true,
+              data: { message: messages.successMsg.registered }
+            });
+          })
+          .catch(err => errorManger.retWithDatabaseError(res, err));
+      }
+    })
+    .catch(err => errorManger.retWithDatabaseError(res, err));
 };
 
 /**
@@ -221,7 +217,7 @@ const register = async (req: Request, res: Response) => {
  * @security JWT
  */
 
-const updateList = async (req: Request, res: Response) => {
+/* const updateList = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { username } = req.body;
   let payload = null;
@@ -232,14 +228,14 @@ const updateList = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(401).end();
   }
-  let modifySql: string = "UPDATE users SET username = ? WHERE id = ?";
-  let sql: string = "select * from users where id=" + id;
+  const modifySql = "UPDATE users SET username = ? WHERE id = ?";
+  const sql: string = "select * from users where id=" + id;
   connection.query(sql, function (err, data) {
     connection.query(sql, function (err) {
       if (err) {
         Logger.error(err);
       } else {
-        let modifyParams: string[] = [username, id];
+        const modifyParams: string[] = [username, id];
         // 改
         connection.query(modifySql, modifyParams, async function (err, result) {
           if (err) {
@@ -247,14 +243,14 @@ const updateList = async (req: Request, res: Response) => {
           } else {
             await res.json({
               success: true,
-              data: { message: Message[7] },
+              data: { message: Message[7] }
             });
           }
         });
       }
     });
   });
-};
+}; */
 
 /**
  * @typedef DeleteList
@@ -271,7 +267,7 @@ const updateList = async (req: Request, res: Response) => {
  * @security JWT
  */
 
-const deleteList = async (req: Request, res: Response) => {
+/* const deleteList = async (req: Request, res: Response) => {
   const { id } = req.params;
   let payload = null;
   try {
@@ -281,18 +277,18 @@ const deleteList = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(401).end();
   }
-  let sql: string = "DELETE FROM users where id=" + "'" + id + "'";
+  const sql: string = "DELETE FROM users where id=" + "'" + id + "'";
   connection.query(sql, async function (err, data) {
     if (err) {
       console.log(err);
     } else {
       await res.json({
         success: true,
-        data: { message: Message[8] },
+        data: { message: Message[8] }
       });
     }
   });
-};
+}; */
 
 /**
  * @typedef SearchPage
@@ -314,7 +310,7 @@ const deleteList = async (req: Request, res: Response) => {
  * @security JWT
  */
 
-const searchPage = async (req: Request, res: Response) => {
+/* const searchPage = async (req: Request, res: Response) => {
   const { page, size } = req.body;
   let payload = null;
   try {
@@ -324,7 +320,7 @@ const searchPage = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(401).end();
   }
-  let sql: string =
+  const sql: string =
     "select * from users limit " + size + " offset " + size * (page - 1);
   connection.query(sql, async function (err, data) {
     if (err) {
@@ -332,11 +328,11 @@ const searchPage = async (req: Request, res: Response) => {
     } else {
       await res.json({
         success: true,
-        data,
+        data
       });
     }
   });
-};
+}; */
 
 /**
  * @typedef SearchVague
@@ -357,7 +353,7 @@ const searchPage = async (req: Request, res: Response) => {
  * @security JWT
  */
 
-const searchVague = async (req: Request, res: Response) => {
+/* const searchVague = async (req: Request, res: Response) => {
   const { username } = req.body;
   let payload = null;
   try {
@@ -370,9 +366,9 @@ const searchVague = async (req: Request, res: Response) => {
   if (username === "" || username === null)
     return res.json({
       success: false,
-      data: { message: Message[9] },
+      data: { message: Message[9] }
     });
-  let sql: string = "select * from users";
+  let sql = "select * from users";
   sql += " WHERE username LIKE " + mysql.escape("%" + username + "%");
   connection.query(sql, function (err, data) {
     connection.query(sql, async function (err) {
@@ -381,12 +377,12 @@ const searchVague = async (req: Request, res: Response) => {
       } else {
         await res.json({
           success: true,
-          data,
+          data
         });
       }
     });
   });
-};
+}; */
 
 // express-swagger-generator中没有文件上传文档写法，所以请使用postman调试
 const upload = async (req: Request, res: Response) => {
@@ -394,7 +390,7 @@ const upload = async (req: Request, res: Response) => {
   const des_file: any = (index: number) =>
     "./public/files/" + req.files[index].originalname;
   let filesLength = req.files.length as number;
-  let result = [];
+  const result = [];
 
   function asyncUpload() {
     return new Promise((resolve, rejects) => {
@@ -407,7 +403,7 @@ const upload = async (req: Request, res: Response) => {
               while (filesLength > 0) {
                 result.push({
                   filename: req.files[filesLength - 1].originalname,
-                  filepath: utils.getAbsolutePath(des_file(filesLength - 1)),
+                  filepath: utils.getAbsolutePath(des_file(filesLength - 1))
                 });
                 filesLength--;
               }
@@ -420,13 +416,13 @@ const upload = async (req: Request, res: Response) => {
   }
 
   asyncUpload()
-    .then((fileList) => {
+    .then(fileList => {
       res.json({
         success: true,
         data: {
           message: Message[11],
-          fileList,
-        },
+          fileList
+        }
       });
     })
     .catch(() => {
@@ -434,8 +430,8 @@ const upload = async (req: Request, res: Response) => {
         success: false,
         data: {
           message: Message[10],
-          fileList: [],
-        },
+          fileList: []
+        }
       });
     });
 };
@@ -451,7 +447,7 @@ const captcha = async (req: Request, res: Response) => {
   const create = createMathExpr({
     mathMin: 1,
     mathMax: 4,
-    mathOperator: "+",
+    mathOperator: "+"
   });
   generateVerify = Number(create.text);
   res.type("svg"); // 响应的类型
@@ -461,10 +457,10 @@ const captcha = async (req: Request, res: Response) => {
 export {
   login,
   register,
-  updateList,
-  deleteList,
-  searchPage,
-  searchVague,
+  /*   updateList,
+    deleteList,
+    searchPage,
+    searchVague, */
   upload,
-  captcha,
+  captcha
 };
