@@ -84,3 +84,6 @@ docs
 .DS_Store
 upload_tmp
 public/files/
+
+# Database File
+src/data/database.db
